@@ -1,0 +1,95 @@
+{
+    "name": "Crystal",
+    "version": "0.1",
+    "last_updated": "2024-12-19",
+    "language": "en",
+    "routes": {
+        "6": [
+            {
+                "type": "stop",
+                "name": "Hardbass Mountain",
+                "announcement": [
+                    {
+                        "file": "nextstop.mp3",
+                        "delay": 0.1
+                    },
+                    {
+                        "file": "hardbass_mountain.mp3"
+                    },
+                    {
+                        "file": "and.mp3",
+                        "delay": 0.1
+                    },
+                    {
+                        "file": "tdw_stage.mp3",
+                        "delay": 0.1
+                    }
+                ]
+            },
+            {
+                "type": "stop",
+                "name": "Town Monument",
+                "announcement": [
+                    {
+                        "file": "nextstop.mp3",
+                        "delay": 0.1
+                    },
+                    {
+                        "file": "town_mon.mp3"
+                    }
+                ]
+            },
+            {
+                "type": "stop",
+                "name": "Antidisestablishmentaism Street",
+                "announcement": [
+                    {
+                        "file": "nextstop.mp3",
+                        "delay": 0.1
+                    },
+                    {
+                        "file": "antidis.mp3",
+                        "delay": 0.05
+                    },
+                    {
+                        "file": "street.mp3",
+                        "delay": 0.1
+                    }
+                ]
+            },
+            {
+                "type": "stop",
+                "name": "Derailment Street",
+                "announcement": [
+                    {
+                        "file": "nextstop.mp3",
+                        "delay": 0.1
+                    },
+                    {
+                        "file": "derailment.mp3",
+                        "delay": 0.05
+                    },
+                    {
+                        "file": "street.mp3",
+                        "delay": 0.3
+                    },
+                    {
+                        "file": "metro.mp3",
+                        "delay": 0.1
+                    },
+                    {
+                        "file": "bay.mp3",
+                        "delay": 0.02
+                    },
+                    {
+                        "file": "1.mp3",
+                        "delay": 0.1
+                    }
+                ]
+            },
+            {
+
+            }
+        ]
+    }
+}
