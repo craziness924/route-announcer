@@ -1,4 +1,5 @@
 import os
+import time
 
 import json
 
@@ -9,6 +10,13 @@ from pydub import AudioSegment
 
 from pynput import keyboard
 
+HOTKEYS= {
+    "next_announcement": keyboard.HotKey.parse('<alt>+b'),
+    "skip_next_announcement": keyboard.HotKey.parse('<alt>+m')
+}
+
+def handle_hotkeys():
+    return
 
 class Voice:
     def __init__(self, name, path, routes):
@@ -36,20 +44,35 @@ class Voice:
                 self.audio_segments[f.path] = a_s
             except:
                 print(f)
+    def get_stops_for_route(self, route_key):
+        route = self.routes[route_key]
+        stops = []
+
+        for announcement in route:
+            try:
+                if announcement['type'] != "stop":
+                    continue
+            except KeyError:
+                print(f"Could not parse a stop in voice {self.name} for route {route_key}!")
+                continue
+            stops.append(announcement["name"])
+
+        return stops
+    def get_announcements_for_route(self, route_key):
+        announcements = []
+
+        route_announcements = self.routes[route_key]
+
+        return route_announcements
+    def find_index_of_stop(self, route_key, stop_name):
+        route = self.routes[route_key]
+
+        for i, s in enumerate(route):
+            if s["name"] == stop_name:
+                return i
                 
-
-def play_announcement(files_to_play):
-    # f = ["voices/crystal/nextstop.mp3", "voices/crystal/derailment.mp3", "voices/crystal/street.mp3", "voices/crystal/metro.mp3", "voices/crystal/bay.mp3", "voices/crystal/1.mp3"]
-    # audio_segments: list[AudioSegment] = []
-
-    # for r in files_to_play:
-    #     a = AudioSegment.from_file(r)
-    #     audio_segments.append(a)
-
-    # for a_s in audio_segments:
-    #     pydub.playback.play(a_s)
-    #     time.sleep(0.2)
-
+def play_announcement(voice: Voice, route_key, announcement_index):
+    announcement = voice.routes[route_key][announcement_index]
     pass
 
 def create_hotkeys():
@@ -99,12 +122,8 @@ def get_selection(options, prompt=None, opt_name_key=None):
         try:
             val = int(input())-1
             
-            try:
-                if options.items[val]:
-                    valid_input = True
-            except AttributeError:
-                options[val]
-                valid_input = True
+            if val <= len(options)-1:
+                valid_input=True
 
         except (KeyError, IndexError, ValueError):
             print("Invalid input!\n")
@@ -124,34 +143,71 @@ if __name__ == "__main__":
     while True:
         selected_voice: Voice = None
         selecting_input = True
-        print("\n---------------------\n\n")
+        print("\n---------------------\n")
 
         main_menu_selection = get_selection(["Start Voice Routine", "Exit Program"],  "Please select an option below:")
-        print("\n")
 
         if main_menu_selection == 0:
-            selected_voice_idx = get_selection(available_voices, "Please select a voice:", "name")
-            # for i, v in enumerate(available_voices):
-            #     print(f"[{i+1}] {v.name}")
-            
+            selected_voice_idx = get_selection(available_voices, "Please select a voice:", "name")           
             selected_voice = available_voices[selected_voice_idx]
-            selecting_input = False
         elif main_menu_selection == 1:
-            print("Exiting program!")
+            print("Exiting!")
             exit()                
 
         print("Creating audio segments for selected voice!")
-        #selected_voice.create_audio_segments()
 
         print("Ready!")
 
-        selecting_input = True
 
-        while selecting_input:
-            selected_start = get_selection(selected_voice.routes.keys(), "Please select a route:")
+        selected_route_idx = get_selection(list(selected_voice.routes.keys()), "Please select a route:")
+        
+        selected_route = list(selected_voice.routes.keys())[selected_route_idx]
 
-        try:
-            while True:
-                pass
-        except KeyboardInterrupt:
-            print("\n Exiting Voice Routine!")
+        route_stops = selected_voice.get_stops_for_route(selected_route)
+        selected_start_idx = get_selection(route_stops, "Please select a starting stop:")
+        selected_start = route_stops[selected_start_idx]
+
+        possible_destinations = list(route_stops)
+        possible_destinations.remove(selected_start)
+
+        selected_destination_idx = get_selection(possible_destinations, "Please select a destination stop:")
+        selected_destination = possible_destinations[selected_destination_idx]
+
+        current_index = selected_voice.find_index_of_stop(route_key=selected_route, stop_name=selected_start)
+        max_index = len(selected_voice.routes[selected_route])-1
+        
+        stop_hotkey_obj= keyboard.HotKey(HOTKEYS["next_announcement"], on_activate=None)
+        skip_hotkey_obj = keyboard.HotKey(HOTKEYS["skip_next_announcement"], on_activate=None)
+        
+
+    
+        # From pynput example documents: https://pynput.readthedocs.io/en/latest/keyboard.html#global-hotkeys
+        while True:
+            time.sleep(0.3)
+
+            try:
+                with keyboard.Listener(
+                    on_press=stop_hotkey_obj.press,
+                    on_release=stop_hotkey_obj.release) as l:
+                    
+                    l.join()
+
+                    if stop_hotkey_obj._state == stop_hotkey_obj._keys:
+                        print("buh")
+                        play_announcement(voice=selected_voice, route_key=selected_route, announcement_index=current_index)
+                        
+                        for k in HOTKEYS["next_announcement"]: 
+                            stop_hotkey_obj.release(k)
+
+                    if skip_hotkey_obj._state == skip_hotkey_obj._keys:
+                        print("Skipping next!")                        
+                        for k in HOTKEYS["skip_next_announcements"]: 
+                            skip_hotkey_obj.release(k)
+
+                    if current_index == max_index:
+                        current_index = 0
+                    else: 
+                        current_index+=1
+            except KeyboardInterrupt:
+                print("\nExiting Voice Routine!")
+                break

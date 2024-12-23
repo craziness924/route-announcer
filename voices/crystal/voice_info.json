@@ -3,16 +3,19 @@
     "version": "0.1",
     "last_updated": "2024-12-19",
     "language": "en",
+    "special_announcements": {
+        "next_stop": ["nextstop.mp3"],
+        "not_in_service": [],
+        "passenger_info_announcements": ["Please do not put your feet on the seats.mp3",
+        "For your safety children should remain.mp3", "FoodAndDrinks.mp3", "Fare_Paid_Zone_Announcement.mp3"], 
+        "after_all_stops": ["holdon.mp3"]
+    },
     "routes": {
         "6": [
             {
                 "type": "stop",
                 "name": "Hardbass Mountain",
                 "announcement": [
-                    {
-                        "file": "nextstop.mp3",
-                        "delay": 0.1
-                    },
                     {
                         "file": "hardbass_mountain.mp3"
                     },
@@ -31,22 +34,17 @@
                 "name": "Town Monument",
                 "announcement": [
                     {
-                        "file": "nextstop.mp3",
-                        "delay": 0.1
-                    },
-                    {
                         "file": "town_mon.mp3"
                     }
                 ]
             },
             {
+                "type": "passenger_info_announcements"
+            },
+            {
                 "type": "stop",
                 "name": "Antidisestablishmentaism Street",
                 "announcement": [
-                    {
-                        "file": "nextstop.mp3",
-                        "delay": 0.1
-                    },
                     {
                         "file": "antidis.mp3",
                         "delay": 0.05
@@ -58,13 +56,13 @@
                 ]
             },
             {
+                "type": "passenger_info_announcements",
+                "file": "Fare_Paid_Zone_Announcement.mp3"
+            },
+            {
                 "type": "stop",
                 "name": "Derailment Street",
                 "announcement": [
-                    {
-                        "file": "nextstop.mp3",
-                        "delay": 0.1
-                    },
                     {
                         "file": "derailment.mp3",
                         "delay": 0.05
@@ -76,7 +74,14 @@
                     {
                         "file": "metro.mp3",
                         "delay": 0.1
-                    },
+                    }
+                ]
+            },
+            {
+                "type": "info",
+                "name": "Derailment Street Bay Information",
+                "immediately_after_last": true,
+                "announcement": [
                     {
                         "file": "bay.mp3",
                         "delay": 0.02
@@ -86,9 +91,6 @@
                         "delay": 0.1
                     }
                 ]
-            },
-            {
-
             }
         ]
     }
