@@ -7,16 +7,28 @@ import pydub.playback
 import yaml
 import pydub
 from pydub import AudioSegment
+import pyaudio
 
 from pynput import keyboard
 
-HOTKEYS= {
-    "next_announcement": keyboard.HotKey.parse('<alt>+b'),
-    "skip_next_announcement": keyboard.HotKey.parse('<alt>+m')
+HOTKEYS = {
+    "next_announcement": {"key_comb": keyboard.HotKey.parse('<alt>+b'), "active": False,
+                               "obj": None, "listener": None},
+    "skip_next_announcement": {"key_comb": keyboard.HotKey.parse('<alt>+m'), "active": False, 
+                               "obj": None, "listener": None}
 }
 
+def setup_hotkeys():
+    for h in HOTKEYS:
+        HOTKEYS[h]["obj"] = keyboard.HotKey(HOTKEYS[h]["key_comb"], on_activate=handle_hotkeys)
+    
+    pass
+
+# figures out what hotkey is getting pressed and then raises its flag
 def handle_hotkeys():
-    return
+    for h in HOTKEYS:
+        if HOTKEYS[h]["obj"]._state == HOTKEYS[h]["obj"]._keys:
+            HOTKEYS[h]["active"] = True
 
 class Voice:
     def __init__(self, name, path, routes):
@@ -73,6 +85,8 @@ class Voice:
                 
 def play_announcement(voice: Voice, route_key, announcement_index):
     announcement = voice.routes[route_key][announcement_index]
+    files_to_play = []
+    
     pass
 
 def create_hotkeys():
@@ -134,6 +148,8 @@ def get_selection(options, prompt=None, opt_name_key=None):
 if __name__ == "__main__":
     config_path = "config.yaml"
     config = load_config(config_path)
+    
+    setup_hotkeys()
 
     available_voices = load_voices(config["voices_path"])
 
@@ -144,7 +160,7 @@ if __name__ == "__main__":
         selected_voice: Voice = None
         selecting_input = True
         print("\n---------------------\n")
-
+        
         main_menu_selection = get_selection(["Start Voice Routine", "Exit Program"],  "Please select an option below:")
 
         if main_menu_selection == 0:
@@ -174,40 +190,38 @@ if __name__ == "__main__":
         selected_destination = possible_destinations[selected_destination_idx]
 
         current_index = selected_voice.find_index_of_stop(route_key=selected_route, stop_name=selected_start)
+        
+        # this will be smaller than the actual maximum of the last because of "immediately after" last counting towards it
         max_index = len(selected_voice.routes[selected_route])-1
         
-        stop_hotkey_obj= keyboard.HotKey(HOTKEYS["next_announcement"], on_activate=None)
-        skip_hotkey_obj = keyboard.HotKey(HOTKEYS["skip_next_announcement"], on_activate=None)
-        
+        for o in HOTKEYS:
+            HOTKEYS[o]["listener"] = keyboard.Listener(        
+                on_press=HOTKEYS[o]["obj"].press,
+                on_release=HOTKEYS[o]["obj"].release)
+            HOTKEYS[o]["listener"].start()
 
-    
-        # From pynput example documents: https://pynput.readthedocs.io/en/latest/keyboard.html#global-hotkeys
         while True:
-            time.sleep(0.3)
-
             try:
-                with keyboard.Listener(
-                    on_press=stop_hotkey_obj.press,
-                    on_release=stop_hotkey_obj.release) as l:
+                if HOTKEYS["next_announcement"]["active"]:
+                    play_announcement(voice=selected_voice, route_key=selected_route, announcement_index=current_index)       
                     
-                    l.join()
+                    print("buh")
+                    current_index+=1
 
-                    if stop_hotkey_obj._state == stop_hotkey_obj._keys:
-                        print("buh")
-                        play_announcement(voice=selected_voice, route_key=selected_route, announcement_index=current_index)
+                    HOTKEYS['next_announcement']["active"] = False
+                if HOTKEYS["skip_next_announcement"]["active"]:
+                    current_index += 1
+                    print("guh")
+
+                    HOTKEYS['skip_next_announcement']["active"] = False
+
+                if current_index >= max_index:
+                    current_index = 0
                         
-                        for k in HOTKEYS["next_announcement"]: 
-                            stop_hotkey_obj.release(k)
-
-                    if skip_hotkey_obj._state == skip_hotkey_obj._keys:
-                        print("Skipping next!")                        
-                        for k in HOTKEYS["skip_next_announcements"]: 
-                            skip_hotkey_obj.release(k)
-
-                    if current_index == max_index:
-                        current_index = 0
-                    else: 
-                        current_index+=1
             except KeyboardInterrupt:
                 print("\nExiting Voice Routine!")
+
+                for o in HOTKEYS:
+                    HOTKEYS[o]["listener"].stop()
+
                 break

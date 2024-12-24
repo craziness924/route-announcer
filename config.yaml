@@ -1,1 +1,6 @@
 voices_path: "voices"
+
+
+play_passenger_info_announcements: true # enables/disables announcements under special/passenger_info_announcements
+play_route_announcements: true # enables/disables announcements that say the destination of the vehicle (i.e. "6 to Tatra Forest")
+play_spammy_announcements: true # enables/disables announcements under special/after_all_stops category

@@ -8,7 +8,8 @@
         "not_in_service": [],
         "passenger_info_announcements": ["Please do not put your feet on the seats.mp3",
         "For your safety children should remain.mp3", "FoodAndDrinks.mp3", "Fare_Paid_Zone_Announcement.mp3"], 
-        "after_all_stops": ["holdon.mp3"]
+        "after_all_stops": ["holdon.mp3"],
+        "route_announcements": {"6": ["6.mp3", "to.mp3"]}
     },
     "routes": {
         "6": [
